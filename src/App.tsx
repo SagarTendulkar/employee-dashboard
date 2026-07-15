@@ -1,7 +1,9 @@
+import Applayout from "./layout/AppLayout";
+
 function App() {
     return (
         <>
-            <h1> Employee Dashboard</h1>
+            <Applayout />
         </>
     );
 }
