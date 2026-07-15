@@ -1,3 +1,4 @@
+import Dashboard from "@/pages/Dashboard";
 import Header from "./Header";
 import SideBar from "./Sidebar";
 
@@ -8,7 +9,7 @@ const Applayout = () => {
             <div className="flex ">
                 <SideBar />
                 <main className="flex-1">
-                    <h1>Dashboard</h1>
+                    <Dashboard />
                 </main>
             </div>
         </div>
