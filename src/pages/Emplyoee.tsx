@@ -1,16 +1,20 @@
+import EmployeeDetailsModal from "@/components/employee/EmployeeDetailsModal";
 import EmployeeTable from "@/components/employee/EmployeeTable";
 import SearchBar from "@/components/employee/SearchBar";
 import SortDropdown from "@/components/employee/SortDropdown";
 import useEmployees from "@/hooks/useEmployees";
+import type { Employee } from "@/types/employee";
 import { useMemo, useState } from "react";
 
-type SortOption = "name-asc" | "name-desc";
+export type SortOption = "name-asc" | "name-desc";
 
 const Employee = () => {
-    // Fixed typo from 'Emplyoee' to 'Employee'
     const { employees, loading, error } = useEmployees();
     const [searchTerm, setSearchTerm] = useState("");
     const [sortBy, setSortBy] = useState<SortOption>("name-asc");
+    const [selectedEmployee, setSelectedEmployee] = useState<Employee | null>(
+        null,
+    );
 
     const filteredEmployees = useMemo(() => {
         let result = employees;
@@ -80,8 +84,17 @@ const Employee = () => {
 
             {/* Main Data Table */}
             <div className="bg-white rounded-2xl shadow-sm border border-amber-200 overflow-hidden">
-                <EmployeeTable employees={filteredEmployees} />
+                <EmployeeTable
+                    employees={filteredEmployees}
+                    onView={setSelectedEmployee}
+                />
             </div>
+            {selectedEmployee && (
+                <EmployeeDetailsModal
+                    employee={selectedEmployee}
+                    onClose={() => setSelectedEmployee(null)}
+                />
+            )}
         </div>
     );
 };

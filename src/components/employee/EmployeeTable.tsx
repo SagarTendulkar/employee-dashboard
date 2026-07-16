@@ -3,9 +3,10 @@ import { LuEye, LuPencil } from "react-icons/lu";
 
 interface EmployeeTableProps {
     employees: Employee[];
+    onView: (employee: Employee) => void;
 }
 
-const EmployeeTable = ({ employees }: EmployeeTableProps) => {
+const EmployeeTable = ({ employees, onView }: EmployeeTableProps) => {
     return (
         <div className="w-full overflow-x-auto rounded-2xl border border-amber-200 bg-white shadow-sm">
             <table className="w-full text-left border-collapse text-sm">
@@ -45,7 +46,10 @@ const EmployeeTable = ({ employees }: EmployeeTableProps) => {
                                 </td>
                                 <td className="p-4">
                                     <div className="flex items-center justify-center gap-2">
-                                        <button className="flex items-center gap-1 px-3 py-1.5 text-xs font-medium text-amber-800 hover:text-amber-950 bg-amber-50 hover:bg-amber-100 border border-amber-200 rounded-lg transition-colors">
+                                        <button
+                                            onClick={() => onView(employee)}
+                                            className="flex items-center gap-1 px-3 py-1.5 text-xs font-medium text-amber-800 hover:text-amber-950 bg-amber-50 hover:bg-amber-100 border border-amber-200 rounded-lg transition-colors"
+                                        >
                                             <LuEye className="text-sm" />
                                             <span>View</span>
                                         </button>

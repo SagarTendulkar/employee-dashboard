@@ -1,6 +1,8 @@
+import type { SortOption } from "@/pages/Emplyoee";
+
 interface SortDropdownProps {
-    value: string;
-    onChange: (value: string) => void;
+    value: SortOption;
+    onChange: (value: SortOption) => void;
 }
 
 // Fixed: Destructured properties from a single props argument with accurate TypeScript binding
@@ -16,7 +18,7 @@ const SortDropdown = ({ value, onChange }: SortDropdownProps) => {
             <select
                 id="sort-select"
                 value={value}
-                onChange={(e) => onChange(e.target.value)}
+                onChange={(e) => onChange(e.target.value as SortOption)}
                 className="w-full px-3 py-2 bg-white border border-amber-200 rounded-xl text-sm text-amber-950 shadow-sm focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-amber-500 cursor-pointer"
             >
                 <option value="name-asc">Name (A - Z)</option>
