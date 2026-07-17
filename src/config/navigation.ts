@@ -1,6 +1,5 @@
 import type { IconType } from "react-icons";
 import {
-    LuCalendarCheck2,
     LuFolderTree,
     LuLayoutDashboard,
     LuSettings,
@@ -16,8 +15,12 @@ interface MenuItem {
 
 export const menuItems: MenuItem[] = [
     { id: "m1", label: "Dashboard", icon: LuLayoutDashboard, path: "/" },
-    { id: "m2", label: "Employees", icon: LuUsers, path: "/" },
-    { id: "m3", label: "Departments", icon: LuFolderTree, path: "/" },
-    { id: "m4", label: "Attendance", icon: LuCalendarCheck2, path: "/" },
-    { id: "m5", label: "Settings", icon: LuSettings, path: "/" },
+    { id: "m2", label: "Employees", icon: LuUsers, path: "/employees" },
+    {
+        id: "m3",
+        label: "Departments",
+        icon: LuFolderTree,
+        path: "/departments",
+    },
+    { id: "m4", label: "Settings", icon: LuSettings, path: "/reports" },
 ];

@@ -1,21 +1,22 @@
-import Dashboard from "@/pages/Dashboard";
-import Header from "./Header";
-import SideBar from "./Sidebar";
-import Employee from "@/pages/Emplyoee";
+import { Outlet } from "react-router-dom";
 
-const Applayout = () => {
+import Sidebar from "./Sidebar";
+import Navbar from "./Navbar";
+
+const AppLayout = () => {
     return (
-        <div className="min-h-screen">
-            <Header />
-            <div className="flex ">
-                <SideBar />
-                <main className="flex-1">
-                    <Dashboard />
-                    <Employee />
+        <div className="flex min-h-screen bg-gray-100">
+            <Sidebar />
+
+            <div className="flex flex-col flex-1">
+                <Navbar />
+
+                <main className="flex-1 p-6">
+                    <Outlet />
                 </main>
             </div>
         </div>
     );
 };
 
-export default Applayout;
+export default AppLayout;

@@ -13,7 +13,7 @@ import { LuUserPlus } from "react-icons/lu";
 
 export type SortOption = "name-asc" | "name-desc";
 
-const Employee = () => {
+const Employees = () => {
     const { employees: serverEmployees, loading, error } = useEmployees();
     const [employees, setEmployees] = useState<Employee[]>([]);
     const [searchTerm, setSearchTerm] = useState("");
@@ -199,4 +199,4 @@ const Employee = () => {
     );
 };
 
-export default Employee;
+export default Employees;

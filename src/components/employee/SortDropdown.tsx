@@ -1,4 +1,4 @@
-import type { SortOption } from "@/pages/Emplyoee";
+import type { SortOption } from "@/pages/Emplyoees";
 
 interface SortDropdownProps {
     value: SortOption;

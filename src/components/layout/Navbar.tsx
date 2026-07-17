@@ -1,6 +1,6 @@
 import { FiBell, FiUser } from "react-icons/fi";
 
-const Header = () => {
+const Navbar = () => {
     return (
         <header className="flex h-16 items-center justify-between border-b bg-white px-6">
             <h1 className="text-lg font-semibold">Employee Dashboard</h1>
@@ -24,4 +24,4 @@ const Header = () => {
     );
 };
 
-export default Header;
+export default Navbar;
