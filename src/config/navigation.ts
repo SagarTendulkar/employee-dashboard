@@ -1,12 +1,13 @@
 import type { IconType } from "react-icons";
 import {
-    LuFolderTree,
+    LuBuilding2,
+    LuChevronLeft,
     LuLayoutDashboard,
     LuSettings,
     LuUsers,
 } from "react-icons/lu";
 
-interface MenuItem {
+export interface MenuItem {
     id: string;
     label: string;
     icon: IconType;
@@ -14,13 +15,39 @@ interface MenuItem {
 }
 
 export const menuItems: MenuItem[] = [
-    { id: "m1", label: "Dashboard", icon: LuLayoutDashboard, path: "/" },
-    { id: "m2", label: "Employees", icon: LuUsers, path: "/employees" },
     {
-        id: "m3",
+        id: "dashboard",
+        label: "Dashboard",
+        icon: LuLayoutDashboard,
+        path: "/",
+    },
+    {
+        id: "employees",
+        label: "Employees",
+        icon: LuUsers,
+        path: "/employees",
+    },
+    {
+        id: "departments",
         label: "Departments",
-        icon: LuFolderTree,
+        icon: LuBuilding2,
         path: "/departments",
     },
-    { id: "m4", label: "Settings", icon: LuSettings, path: "/reports" },
+    {
+        id: "reports",
+        label: "Reports",
+        icon: LuUsers,
+        path: "/reports",
+    },
+    {
+        id: "settings",
+        label: "Settings",
+        icon: LuSettings,
+        path: "/settings",
+    },
 ];
+
+export const sidebarFooter: { label: string; icon: IconType } = {
+    label: "Collapse",
+    icon: LuChevronLeft,
+};
