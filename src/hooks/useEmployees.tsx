@@ -29,6 +29,7 @@ const useEmployees = () => {
         employees,
         loading,
         error,
+        setEmployees
     };
 };
 
