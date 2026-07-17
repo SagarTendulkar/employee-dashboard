@@ -8,13 +8,14 @@ import SearchBar from "@/components/employee/SearchBar";
 import SortDropdown from "@/components/employee/SortDropdown";
 import useEmployees from "@/hooks/useEmployees";
 import type { Employee } from "@/types/employee";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { LuUserPlus } from "react-icons/lu";
 
 export type SortOption = "name-asc" | "name-desc";
 
 const Employee = () => {
-    const { employees, loading, error, setEmployees } = useEmployees();
+    const { employees: serverEmployees, loading, error } = useEmployees();
+    const [employees, setEmployees] = useState<Employee[]>([]);
     const [searchTerm, setSearchTerm] = useState("");
     const [sortBy, setSortBy] = useState<SortOption>("name-asc");
     const [isAddModalOpen, setIsAddModalOpen] = useState(false);
@@ -27,6 +28,12 @@ const Employee = () => {
     const [deletingEmployee, setDeletingEmployee] = useState<Employee | null>(
         null,
     );
+
+    useEffect(() => {
+        if (serverEmployees.length > 0) {
+            setEmployees(serverEmployees);
+        }
+    }, [serverEmployees]);
 
     const filteredEmployees = useMemo(() => {
         let result = employees;
@@ -124,7 +131,7 @@ const Employee = () => {
     if (error) {
         return (
             <div className="p-6 text-red-600 bg-red-50 border border-red-200 rounded-xl font-medium">
-                Something went wrong, Error: {error}
+                Something went wrong, Error: {error.message}
             </div>
         );
     }
