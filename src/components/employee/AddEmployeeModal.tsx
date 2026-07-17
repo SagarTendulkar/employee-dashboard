@@ -7,11 +7,6 @@ interface AddEmployeeModalProps {
 }
 
 const AddEmployeeModal = ({ onClose, onSubmit }: AddEmployeeModalProps) => {
-    // const handleFormSubmit = (data: FormData) => {
-    //     console.log("Submitting structured form data: ", data);
-    //     onClose();
-    // };
-
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-amber-950/40 backdrop-blur-sm">
             <div className="relative w-full max-w-md bg-white rounded-3xl border border-amber-200 shadow-2xl p-6">

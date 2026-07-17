@@ -1,13 +1,19 @@
 import type { Employee } from "@/types/employee";
-import { LuEye, LuPencil } from "react-icons/lu";
+import { LuEye, LuPencil, LuTrash } from "react-icons/lu";
 
 interface EmployeeTableProps {
     employees: Employee[];
     onView: (employee: Employee) => void;
     onEdit: (employee: Employee) => void;
+    onDelete: (employee: Employee) => void;
 }
 
-const EmployeeTable = ({ employees, onView, onEdit }: EmployeeTableProps) => {
+const EmployeeTable = ({
+    employees,
+    onView,
+    onEdit,
+    onDelete,
+}: EmployeeTableProps) => {
     return (
         <div className="w-full overflow-x-auto rounded-2xl border border-amber-200 bg-white shadow-sm">
             <table className="w-full text-left border-collapse text-sm">
@@ -60,6 +66,13 @@ const EmployeeTable = ({ employees, onView, onEdit }: EmployeeTableProps) => {
                                         >
                                             <LuPencil className="text-sm" />
                                             <span>Edit</span>
+                                        </button>
+                                        <button
+                                            onClick={() => onDelete(employee)}
+                                            className="flex items-center gap-1 px-3 py-1.5 text-xs font-medium text-blue-700 hover:text-blue-800 bg-blue-50 hover:bg-blue-100 border border-blue-200 rounded-lg transition-colors"
+                                        >
+                                            <LuTrash className="text-sm" />
+                                            <span>Delete</span>
                                         </button>
                                     </div>
                                 </td>

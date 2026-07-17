@@ -1,4 +1,5 @@
 import AddEmployeeModal from "@/components/employee/AddEmployeeModal";
+import DeleteEmployeeModal from "@/components/employee/DeleteEmployeeModal";
 import EditEmployeeModal from "@/components/employee/EditEmployeeModal";
 import EmployeeDetailsModal from "@/components/employee/EmployeeDetailsModal";
 import type { FormData } from "@/components/employee/EmployeeForm";
@@ -21,6 +22,9 @@ const Employee = () => {
         null,
     );
     const [editingEmployee, setEditingEmployee] = useState<Employee | null>(
+        null,
+    );
+    const [deletingEmployee, setDeletingEmployee] = useState<Employee | null>(
         null,
     );
 
@@ -97,6 +101,16 @@ const Employee = () => {
         setEditingEmployee(null);
     };
 
+    const handleDeleteEmployee = () => {
+        if (!deletingEmployee) return;
+
+        setEmployees((prev) =>
+            prev.filter((employee) => employee.id !== deletingEmployee.id),
+        );
+
+        setDeletingEmployee(null);
+    };
+
     if (loading) {
         return (
             <div className="p-6 flex items-center justify-center min-h-50">
@@ -145,6 +159,7 @@ const Employee = () => {
                     employees={filteredEmployees}
                     onView={setSelectedEmployee}
                     onEdit={setEditingEmployee}
+                    onDelete={setDeletingEmployee}
                 />
             </div>
             {selectedEmployee && (
@@ -158,6 +173,13 @@ const Employee = () => {
                     employee={editingEmployee}
                     onClose={() => setEditingEmployee(null)}
                     onSubmit={handleEditEmployee}
+                />
+            )}
+            {deletingEmployee && (
+                <DeleteEmployeeModal
+                    employee={deletingEmployee}
+                    onClose={() => setDeletingEmployee(null)}
+                    onConfirm={handleDeleteEmployee}
                 />
             )}
             {isAddModalOpen && (
