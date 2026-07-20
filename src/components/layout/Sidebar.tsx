@@ -1,14 +1,24 @@
 import { menuItems, sidebarFooter } from "@/config/navigation";
 import { NavLink, Link } from "react-router-dom";
 
-const SideBar = () => {
+interface SidebarProps {
+    isOpen: boolean;
+    onClose: () => void;
+}
+
+const SideBar = ({ isOpen, onClose }: SidebarProps) => {
     const FooterIcon = sidebarFooter.icon;
     return (
-        <aside className="flex flex-col w-64 h-screen bg-amber-50 border-r border-amber-200 ">
+        <aside
+            className={`fixed z-40 flex flex-col w-64 h-screen bg-amber-50 border-r border-amber-200 transition-transform duration-200
+                md:sticky md:top-0 md:translate-x-0
+                ${isOpen ? "translate-x-0" : "-translate-x-full"}`}
+        >
             {/* Logo Container */}
             <div className="h-16 flex items-center px-6 border-b border-amber-200">
                 <Link
                     to="/"
+                    onClick={onClose}
                     className="text-xl font-bold text-amber-800 tracking-wide"
                 >
                     EmployeeMS
@@ -18,7 +28,6 @@ const SideBar = () => {
             <nav className="flex-1 mt-4 px-4">
                 <ul className="space-y-1">
                     {menuItems.map((item) => {
-                        // Assign the icon component to a Capitalized variable name
                         const Icon = item.icon;
 
                         return (
@@ -26,6 +35,7 @@ const SideBar = () => {
                                 <NavLink
                                     to={item.path}
                                     end={item.path === "/"}
+                                    onClick={onClose}
                                     className={({ isActive }) =>
                                         `flex items-center gap-3 px-4 py-3 rounded-lg transition-colors font-medium
                                         ${
@@ -35,7 +45,6 @@ const SideBar = () => {
                                         }`
                                     }
                                 >
-                                    {/* Render the Icon component dynamically with size/styling */}
                                     <Icon className="text-xl text-amber-700 shrink-0" />
                                     <span>{item.label}</span>
                                 </NavLink>

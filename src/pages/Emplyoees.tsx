@@ -9,6 +9,7 @@ import EmployeeTable from "@/components/employee/EmployeeTable";
 import SearchBar from "@/components/employee/SearchBar";
 import useEmployees from "@/hooks/useEmployees";
 import type { Employee } from "@/types/employee";
+import { exportToCSV } from "@/utils/exportToCSV";
 import { useEffect, useMemo, useState } from "react";
 import { LuUserPlus } from "react-icons/lu";
 
@@ -170,14 +171,21 @@ const Employees = () => {
                     <SearchBar value={searchTerm} onChange={setSearchTerm} />
                 </div>
 
+                {/* Actions Wrapper: Flex container holds Department selector and control buttons together */}
                 <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full md:w-auto shrink-0">
                     <DepartmentFilter
                         value={selectedDepartment}
                         departments={departments}
                         onChange={setSelectedDepartment}
                     />
+                    <div className="flex items-center gap-3 w-full sm:w-auto shrink-0">
+                        <button
+                            onClick={() => exportToCSV(filteredEmployees)}
+                            className="w-full sm:w-auto flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-semibold rounded-xl border border-amber-200 bg-white text-amber-900 hover:bg-amber-50 transition shadow-sm cursor-pointer whitespace-nowrap"
+                        >
+                            Export CSV
+                        </button>
 
-                    <div className="w-full sm:w-auto shrink-0">
                         <button
                             onClick={() => setIsAddModalOpen(true)}
                             className="w-full sm:w-auto flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-semibold text-white bg-amber-700 hover:bg-amber-800 rounded-xl transition-colors shadow-sm cursor-pointer whitespace-nowrap"
@@ -227,7 +235,7 @@ const Employees = () => {
             {deletingEmployee && (
                 <DeleteEmployeeModal
                     employee={deletingEmployee}
-                    onClose={() => setEditingEmployee(null)}
+                    onClose={() => setDeletingEmployee(null)}
                     onConfirm={handleDeleteEmployee}
                 />
             )}

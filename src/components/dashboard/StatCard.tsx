@@ -1,6 +1,6 @@
 interface StatCardProps {
     title: string;
-    value: number;
+    value: number | string;
 }
 
 const StatCard = ({ title, value }: StatCardProps) => {
