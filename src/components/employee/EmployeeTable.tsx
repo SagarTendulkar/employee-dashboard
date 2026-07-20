@@ -1,11 +1,19 @@
 import type { Employee } from "@/types/employee";
-import { LuEye, LuPencil, LuTrash } from "react-icons/lu";
+import {
+    LuArrowDown,
+    LuArrowUp,
+    LuEye,
+    LuPencil,
+    LuTrash,
+} from "react-icons/lu";
 
 interface EmployeeTableProps {
     employees: Employee[];
     onView: (employee: Employee) => void;
     onEdit: (employee: Employee) => void;
     onDelete: (employee: Employee) => void;
+    sortDirection: "asc" | "desc";
+    onSortChange: () => void;
 }
 
 const EmployeeTable = ({
@@ -13,6 +21,8 @@ const EmployeeTable = ({
     onView,
     onEdit,
     onDelete,
+    sortDirection,
+    onSortChange,
 }: EmployeeTableProps) => {
     return (
         <div className="w-full overflow-x-auto rounded-2xl border border-amber-200 bg-white shadow-sm">
@@ -20,7 +30,19 @@ const EmployeeTable = ({
                 <thead>
                     <tr className="bg-amber-50/70 border-b border-amber-200 text-amber-900 font-semibold">
                         <th className="p-4 w-16">Avatar</th>
-                        <th className="p-4">Name</th>
+                        <th className="p-4">
+                            <button
+                                onClick={onSortChange}
+                                className="flex items-center gap-2 font-semibold cursor-pointer hover:text-amber-700"
+                            >
+                                Name
+                                {sortDirection === "asc" ? (
+                                    <LuArrowUp size={16} />
+                                ) : (
+                                    <LuArrowDown size={16} />
+                                )}
+                            </button>
+                        </th>
                         <th className="p-4">Email</th>
                         <th className="p-4">Department</th>
                         <th className="p-4 text-center">Actions</th>

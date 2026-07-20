@@ -1,24 +1,29 @@
+import Pagination from "@/components/common/Pagination";
 import AddEmployeeModal from "@/components/employee/AddEmployeeModal";
 import DeleteEmployeeModal from "@/components/employee/DeleteEmployeeModal";
+import DepartmentFilter from "@/components/employee/DepartmentFilter";
 import EditEmployeeModal from "@/components/employee/EditEmployeeModal";
 import EmployeeDetailsModal from "@/components/employee/EmployeeDetailsModal";
 import type { FormData } from "@/components/employee/EmployeeForm";
 import EmployeeTable from "@/components/employee/EmployeeTable";
 import SearchBar from "@/components/employee/SearchBar";
-import SortDropdown from "@/components/employee/SortDropdown";
 import useEmployees from "@/hooks/useEmployees";
 import type { Employee } from "@/types/employee";
 import { useEffect, useMemo, useState } from "react";
 import { LuUserPlus } from "react-icons/lu";
 
-export type SortOption = "name-asc" | "name-desc";
+type SortDirection = "asc" | "desc";
+
+const ITEMS_PER_PAGE = 10;
 
 const Employees = () => {
     const { employees: serverEmployees, loading, error } = useEmployees();
     const [employees, setEmployees] = useState<Employee[]>([]);
     const [searchTerm, setSearchTerm] = useState("");
-    const [sortBy, setSortBy] = useState<SortOption>("name-asc");
+    const [selectedDepartment, setSelectedDepartment] = useState("");
+    const [sortDirection, setSortDirection] = useState<SortDirection>("asc");
     const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+    const [currentPage, setCurrentPage] = useState(1);
     const [selectedEmployee, setSelectedEmployee] = useState<Employee | null>(
         null,
     );
@@ -29,11 +34,23 @@ const Employees = () => {
         null,
     );
 
+    // Sync Server state to Local state for mock editing operations
     useEffect(() => {
-        if (serverEmployees.length > 0) {
+        if (serverEmployees && serverEmployees.length > 0) {
             setEmployees(serverEmployees);
         }
     }, [serverEmployees]);
+
+    // Reset pagination window when search or sort triggers change
+    useEffect(() => {
+        setCurrentPage(1);
+    }, [searchTerm, sortDirection, selectedDepartment]);
+
+    const departments = useMemo(() => {
+        return Array.from(
+            new Set(employees.map((employee) => employee.company.department)),
+        ).sort();
+    }, [employees]);
 
     const filteredEmployees = useMemo(() => {
         let result = employees;
@@ -52,24 +69,33 @@ const Employees = () => {
             });
         }
 
+        if (selectedDepartment) {
+            result = result.filter(
+                (employee) =>
+                    employee.company.department === selectedDepartment,
+            );
+        }
+
         const sortedEmployees = [...result];
 
         sortedEmployees.sort((a, b) => {
             const nameA = `${a.firstName} ${a.lastName}`.toLowerCase();
             const nameB = `${b.firstName} ${b.lastName}`.toLowerCase();
 
-            switch (sortBy) {
-                case "name-asc":
-                    return nameA.localeCompare(nameB);
-                case "name-desc":
-                    return nameB.localeCompare(nameA);
-                default:
-                    return 0;
-            }
+            return sortDirection === "asc"
+                ? nameA.localeCompare(nameB)
+                : nameB.localeCompare(nameA);
         });
 
         return sortedEmployees;
-    }, [searchTerm, employees, sortBy]);
+    }, [searchTerm, employees, sortDirection, selectedDepartment]);
+
+    const totalPages = Math.ceil(filteredEmployees.length / ITEMS_PER_PAGE);
+    const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+    const paginatedEmployees = filteredEmployees.slice(
+        startIndex,
+        startIndex + ITEMS_PER_PAGE,
+    );
 
     const handleAddEmployee = (data: FormData) => {
         const newEmployee: Employee = {
@@ -131,7 +157,8 @@ const Employees = () => {
     if (error) {
         return (
             <div className="p-6 text-red-600 bg-red-50 border border-red-200 rounded-xl font-medium">
-                Something went wrong, Error: {error.message}
+                Something went wrong, Error:{" "}
+                {error instanceof Error ? error.message : String(error)}
             </div>
         );
     }
@@ -144,9 +171,11 @@ const Employees = () => {
                 </div>
 
                 <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full md:w-auto shrink-0">
-                    <div className="w-full sm:w-auto shrink-0">
-                        <SortDropdown value={sortBy} onChange={setSortBy} />
-                    </div>
+                    <DepartmentFilter
+                        value={selectedDepartment}
+                        departments={departments}
+                        onChange={setSelectedDepartment}
+                    />
 
                     <div className="w-full sm:w-auto shrink-0">
                         <button
@@ -163,12 +192,25 @@ const Employees = () => {
             {/* Main Data Table */}
             <div className="bg-white rounded-2xl shadow-sm border border-amber-200 overflow-hidden">
                 <EmployeeTable
-                    employees={filteredEmployees}
+                    employees={paginatedEmployees}
                     onView={setSelectedEmployee}
                     onEdit={setEditingEmployee}
                     onDelete={setDeletingEmployee}
+                    sortDirection={sortDirection}
+                    onSortChange={() =>
+                        setSortDirection((prev) =>
+                            prev === "asc" ? "desc" : "asc",
+                        )
+                    }
                 />
             </div>
+
+            <Pagination
+                currentPage={currentPage}
+                totalPages={totalPages}
+                onPageChange={setCurrentPage}
+            />
+
             {selectedEmployee && (
                 <EmployeeDetailsModal
                     employee={selectedEmployee}
@@ -185,7 +227,7 @@ const Employees = () => {
             {deletingEmployee && (
                 <DeleteEmployeeModal
                     employee={deletingEmployee}
-                    onClose={() => setDeletingEmployee(null)}
+                    onClose={() => setEditingEmployee(null)}
                     onConfirm={handleDeleteEmployee}
                 />
             )}

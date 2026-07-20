@@ -1,18 +1,23 @@
-import StatCard from "@/components/dashboard/StatCard";
-import { dashboardStats } from "@/config/dashboardStats";
+import DashboardHeader from "@/components/dashboard/DashboardHeader";
+import DashboardStatsSection from "@/components/dashboard/DashboardStatsSection";
+import EmployeeDistribution from "@/components/dashboard/EmployeeDistribution";
+import RecentAnnouncements from "@/components/dashboard/RecentAnnouncements";
+import RecentEmployees from "@/components/dashboard/RecentEmployees";
+
 const Dashboard = () => {
     return (
-        <div className="p-6">
-            <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-6">
-                {/* Stat Cards */}
-                {dashboardStats.map((info) => (
-                    <StatCard
-                        key={info.label}
-                        title={info.label}
-                        value={info.value}
-                    />
-                ))}
-            </div>
+        <div className="space-y-8">
+            <DashboardHeader />
+
+            <DashboardStatsSection />
+
+            <section className="grid grid-cols-1 gap-6 xl:grid-cols-3">
+                <EmployeeDistribution />
+
+                <RecentAnnouncements />
+            </section>
+
+            <RecentEmployees />
         </div>
     );
 };
