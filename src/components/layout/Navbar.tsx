@@ -17,7 +17,7 @@ const Navbar = ({ onMenuClick }: NavbarProps) => {
             <div className="flex items-center gap-3 sm:gap-5 min-w-0">
                 <button
                     onClick={onMenuClick}
-                    className="rounded-lg p-2 transition hover:bg-amber-100 shrink-0"
+                    className="md:hidden rounded-lg p-2 transition hover:bg-amber-100 shrink-0"
                 >
                     <LuMenu size={22} className="text-amber-900" />
                 </button>

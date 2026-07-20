@@ -1,19 +1,23 @@
 import Pagination from "@/components/common/Pagination";
 import AddEmployeeModal from "@/components/employee/AddEmployeeModal";
+import BulkDeleteModal from "@/components/employee/BulkDeleteModal";
 import DeleteEmployeeModal from "@/components/employee/DeleteEmployeeModal";
 import DepartmentFilter from "@/components/employee/DepartmentFilter";
 import EditEmployeeModal from "@/components/employee/EditEmployeeModal";
 import EmployeeDetailsModal from "@/components/employee/EmployeeDetailsModal";
 import type { FormData } from "@/components/employee/EmployeeForm";
-import EmployeeTable from "@/components/employee/EmployeeTable";
+import EmployeeSkeleton from "@/components/employee/EmployeeSkeleton";
+import EmployeeTable, {
+    type SortDirection,
+    type SortField,
+} from "@/components/employee/EmployeeTable";
 import SearchBar from "@/components/employee/SearchBar";
 import useEmployees from "@/hooks/useEmployees";
 import type { Employee } from "@/types/employee";
 import { exportToCSV } from "@/utils/exportToCSV";
-import { useEffect, useMemo, useState } from "react";
-import { LuUserPlus } from "react-icons/lu";
-
-type SortDirection = "asc" | "desc";
+import { parseEmployeesCSV } from "@/utils/importFromCSV";
+import { useEffect, useMemo, useRef, useState, type ChangeEvent } from "react";
+import { LuDownload, LuTrash2, LuUpload, LuUserPlus } from "react-icons/lu";
 
 const ITEMS_PER_PAGE = 10;
 
@@ -22,6 +26,7 @@ const Employees = () => {
     const [employees, setEmployees] = useState<Employee[]>([]);
     const [searchTerm, setSearchTerm] = useState("");
     const [selectedDepartment, setSelectedDepartment] = useState("");
+    const [sortField, setSortField] = useState<SortField>("name");
     const [sortDirection, setSortDirection] = useState<SortDirection>("asc");
     const [isAddModalOpen, setIsAddModalOpen] = useState(false);
     const [currentPage, setCurrentPage] = useState(1);
@@ -34,6 +39,9 @@ const Employees = () => {
     const [deletingEmployee, setDeletingEmployee] = useState<Employee | null>(
         null,
     );
+    const [selectedIds, setSelectedIds] = useState<Set<number>>(new Set());
+    const [isBulkDeleteOpen, setIsBulkDeleteOpen] = useState(false);
+    const fileInputRef = useRef<HTMLInputElement>(null);
 
     // Sync Server state to Local state for mock editing operations
     useEffect(() => {
@@ -45,7 +53,7 @@ const Employees = () => {
     // Reset pagination window when search or sort triggers change
     useEffect(() => {
         setCurrentPage(1);
-    }, [searchTerm, sortDirection, selectedDepartment]);
+    }, [searchTerm, sortField, sortDirection, selectedDepartment]);
 
     const departments = useMemo(() => {
         return Array.from(
@@ -80,16 +88,32 @@ const Employees = () => {
         const sortedEmployees = [...result];
 
         sortedEmployees.sort((a, b) => {
-            const nameA = `${a.firstName} ${a.lastName}`.toLowerCase();
-            const nameB = `${b.firstName} ${b.lastName}`.toLowerCase();
+            let valueA: string;
+            let valueB: string;
+
+            switch (sortField) {
+                case "email":
+                    valueA = a.email.toLowerCase();
+                    valueB = b.email.toLowerCase();
+                    break;
+                case "department":
+                    valueA = a.company.department.toLowerCase();
+                    valueB = b.company.department.toLowerCase();
+                    break;
+                case "name":
+                default:
+                    valueA = `${a.firstName} ${a.lastName}`.toLowerCase();
+                    valueB = `${b.firstName} ${b.lastName}`.toLowerCase();
+                    break;
+            }
 
             return sortDirection === "asc"
-                ? nameA.localeCompare(nameB)
-                : nameB.localeCompare(nameA);
+                ? valueA.localeCompare(valueB)
+                : valueB.localeCompare(valueA);
         });
 
         return sortedEmployees;
-    }, [searchTerm, employees, sortDirection, selectedDepartment]);
+    }, [searchTerm, employees, sortField, sortDirection, selectedDepartment]);
 
     const totalPages = Math.ceil(filteredEmployees.length / ITEMS_PER_PAGE);
     const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
@@ -97,6 +121,68 @@ const Employees = () => {
         startIndex,
         startIndex + ITEMS_PER_PAGE,
     );
+
+    const handleSortChange = (field: SortField) => {
+        if (field === sortField) {
+            setSortDirection((prev) => (prev === "asc" ? "desc" : "asc"));
+        } else {
+            setSortField(field);
+            setSortDirection("asc");
+        }
+    };
+
+    const handleToggleSelect = (id: number) => {
+        setSelectedIds((prev) => {
+            const next = new Set(prev);
+            if (next.has(id)) {
+                next.delete(id);
+            } else {
+                next.add(id);
+            }
+            return next;
+        });
+    };
+
+    const handleToggleSelectAll = () => {
+        const pageIds = paginatedEmployees.map((employee) => employee.id);
+        const allSelected = pageIds.every((id) => selectedIds.has(id));
+
+        setSelectedIds((prev) => {
+            const next = new Set(prev);
+            if (allSelected) {
+                pageIds.forEach((id) => next.delete(id));
+            } else {
+                pageIds.forEach((id) => next.add(id));
+            }
+            return next;
+        });
+    };
+
+    const handleBulkDelete = () => {
+        setEmployees((prev) =>
+            prev.filter((employee) => !selectedIds.has(employee.id)),
+        );
+        setSelectedIds(new Set());
+        setIsBulkDeleteOpen(false);
+    };
+
+    const handleImportClick = () => {
+        fileInputRef.current?.click();
+    };
+
+    const handleImportFile = async (e: ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        e.target.value = ""; // allow re-importing the same file later
+        if (!file) return;
+
+        try {
+            const imported = await parseEmployeesCSV(file);
+            setEmployees((prev) => [...prev, ...imported]);
+        } catch {
+            // Silently ignore malformed files for now; a toast/error state
+            // would be a good follow-up here.
+        }
+    };
 
     const handleAddEmployee = (data: FormData) => {
         const newEmployee: Employee = {
@@ -147,10 +233,8 @@ const Employees = () => {
 
     if (loading) {
         return (
-            <div className="p-6 flex items-center justify-center min-h-50">
-                <p className="text-amber-900 font-medium animate-pulse">
-                    Loading employees...
-                </p>
+            <div className="p-6 max-w-7xl mx-auto space-y-6">
+                <EmployeeSkeleton />
             </div>
         );
     }
@@ -178,11 +262,27 @@ const Employees = () => {
                         departments={departments}
                         onChange={setSelectedDepartment}
                     />
-                    <div className="flex items-center gap-3 w-full sm:w-auto shrink-0">
+                    <div className="flex items-center gap-3 w-full sm:w-auto shrink-0 flex-wrap">
+                        <input
+                            ref={fileInputRef}
+                            type="file"
+                            accept=".csv"
+                            onChange={handleImportFile}
+                            className="hidden"
+                        />
+                        <button
+                            onClick={handleImportClick}
+                            className="w-full sm:w-auto flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-semibold rounded-xl border border-amber-200 bg-white text-amber-900 hover:bg-amber-50 transition shadow-sm cursor-pointer whitespace-nowrap"
+                        >
+                            <LuUpload className="text-base" />
+                            Import CSV
+                        </button>
+
                         <button
                             onClick={() => exportToCSV(filteredEmployees)}
                             className="w-full sm:w-auto flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-semibold rounded-xl border border-amber-200 bg-white text-amber-900 hover:bg-amber-50 transition shadow-sm cursor-pointer whitespace-nowrap"
                         >
+                            <LuDownload className="text-base" />
                             Export CSV
                         </button>
 
@@ -197,21 +297,43 @@ const Employees = () => {
                 </div>
             </div>
 
+            {/* Bulk actions bar, only shown once something is selected */}
+            {selectedIds.size > 0 && (
+                <div className="flex items-center justify-between gap-4 bg-amber-100/60 border border-amber-300 rounded-2xl px-4 py-3">
+                    <p className="text-sm font-semibold text-amber-900">
+                        {selectedIds.size} selected
+                    </p>
+                    <div className="flex items-center gap-2">
+                        <button
+                            onClick={() => setSelectedIds(new Set())}
+                            className="px-3 py-1.5 text-xs font-semibold text-amber-900 bg-white hover:bg-amber-50 border border-amber-200 rounded-lg transition-colors"
+                        >
+                            Clear
+                        </button>
+                        <button
+                            onClick={() => setIsBulkDeleteOpen(true)}
+                            className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-white bg-red-600 hover:bg-red-700 rounded-lg transition-colors"
+                        >
+                            <LuTrash2 className="text-sm" />
+                            Delete Selected
+                        </button>
+                    </div>
+                </div>
+            )}
+
             {/* Main Data Table */}
-            <div className="bg-white rounded-2xl shadow-sm border border-amber-200 overflow-hidden">
-                <EmployeeTable
-                    employees={paginatedEmployees}
-                    onView={setSelectedEmployee}
-                    onEdit={setEditingEmployee}
-                    onDelete={setDeletingEmployee}
-                    sortDirection={sortDirection}
-                    onSortChange={() =>
-                        setSortDirection((prev) =>
-                            prev === "asc" ? "desc" : "asc",
-                        )
-                    }
-                />
-            </div>
+            <EmployeeTable
+                employees={paginatedEmployees}
+                onView={setSelectedEmployee}
+                onEdit={setEditingEmployee}
+                onDelete={setDeletingEmployee}
+                sortField={sortField}
+                sortDirection={sortDirection}
+                onSortChange={handleSortChange}
+                selectedIds={selectedIds}
+                onToggleSelect={handleToggleSelect}
+                onToggleSelectAll={handleToggleSelectAll}
+            />
 
             <Pagination
                 currentPage={currentPage}
@@ -243,6 +365,13 @@ const Employees = () => {
                 <AddEmployeeModal
                     onClose={() => setIsAddModalOpen(false)}
                     onSubmit={handleAddEmployee}
+                />
+            )}
+            {isBulkDeleteOpen && (
+                <BulkDeleteModal
+                    count={selectedIds.size}
+                    onClose={() => setIsBulkDeleteOpen(false)}
+                    onConfirm={handleBulkDelete}
                 />
             )}
         </div>
